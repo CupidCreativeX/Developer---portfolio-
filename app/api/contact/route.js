@@ -29,21 +29,35 @@ async function sendTelegramMessage(token, chat_id, message) {
   }
 };
 
+// Escape untrusted content before inserting into HTML
+const escapeHtml = (value) => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 // HTML email template
-const generateEmailTemplate = (name, email, userMessage) => `
+const generateEmailTemplate = (name, email, userMessage) => {
+  const safeName = escapeHtml(name);
+  const safeEmail = escapeHtml(email);
+  const safeUserMessage = escapeHtml(userMessage);
+
+  return `
   <div style="font-family: Arial, sans-serif; color: #333; padding: 20px; background-color: #f4f4f4;">
     <div style="max-width: 600px; margin: auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
       <h2 style="color: #007BFF;">New Message Received</h2>
-      <p><strong>Name:</strong> ${name}</p>
-      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Name:</strong> ${safeName}</p>
+      <p><strong>Email:</strong> ${safeEmail}</p>
       <p><strong>Message:</strong></p>
       <blockquote style="border-left: 4px solid #007BFF; padding-left: 10px; margin-left: 0;">
-        ${userMessage}
+        ${safeUserMessage}
       </blockquote>
       <p style="font-size: 12px; color: #888;">Click reply to respond to the sender.</p>
     </div>
   </div>
 `;
+};
 
 // Helper function to send an email via Nodemailer
 async function sendEmail(payload, message) {
